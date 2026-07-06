@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # InvestAI
 
 > **Advanced AI-Powered Financial Research & Multi-Agent Debate Platform**
@@ -107,3 +108,6 @@ Visit `http://localhost:3000` to start researching.
 ## Disclaimer
 
 This tool is for educational and research purposes only and does not provide financial advice. Always do your own research or consult a qualified financial advisor before making investment decisions.
+=======
+# invest
+>>>>>>> 6248d30c3086444e9cbdab63c465b2ef39453c42
