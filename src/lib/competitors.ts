@@ -1,6 +1,7 @@
 import { CompetitorData, CompetitorBenchmark } from "./types/research";
 import { fetchFinancialData } from "./finance";
-import { callLLM } from "./llm";
+import { callLLMWithSchema } from "./llm";
+import { z } from "zod";
 
 export async function identifyCompetitors(company: string, ticker: string, sector?: string, industry?: string): Promise<string[]> {
   const prompt = `
@@ -10,19 +11,8 @@ export async function identifyCompetitors(company: string, ticker: string, secto
   `;
 
   try {
-    const res = await callLLM({
-      task: "Identify Competitors",
-      messages: [{ role: "user", content: prompt }],
-      temperature: 0.1,
-    });
-
-    if (res.success) {
-      const match = res.content.match(/\[.*?\]/);
-      if (match) {
-        const parsed = JSON.parse(match[0]);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed.slice(0, 5);
-      }
-    }
+    const parsed = await callLLMWithSchema(prompt, z.array(z.string()), 0.1);
+    if (Array.isArray(parsed) && parsed.length > 0) return parsed.slice(0, 5);
   } catch (err) {
     console.warn(`[Competitors] LLM failed for ${ticker}:`, err);
   }

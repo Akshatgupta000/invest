@@ -82,9 +82,9 @@ export async function* runResearchAgent(query: string, riskProfile: RiskProfile 
   ];
   yield { type: "evidence_built", count: evidenceStore.length, message: `Generated ${evidenceStore.length} normalized evidence items.` };
 
-  // Step 7: Parallel Agents
+  // Step 7: Parallel Agents (LangGraph)
   yield { type: "progress", step: "Running AI agent swarm", total: 14, current: 7 };
-  yield { type: "agents_started", message: "Dispatched Bull, Bear, Risk, Valuation, and News agents." };
+  yield { type: "agents_started", message: "Dispatched Bull, Bear, Risk, Valuation, and News agents via LangGraph." };
 
   const context: AgentContext = {
     companyName: financials.company,
@@ -97,21 +97,20 @@ export async function* runResearchAgent(query: string, riskProfile: RiskProfile 
     riskProfile
   };
 
-  const [bullRes, bearRes, riskRes, valRes, newsRes] = await Promise.allSettled([
-    runBullAgent(context),
-    runBearAgent(context),
-    runRiskAgent(context),
-    runValuationAgent(context),
-    runNewsAgent(context),
-  ]);
+  const { buildAgentSwarmGraph } = await import("./graph");
+  const graph = buildAgentSwarmGraph();
+
+  // Execute the LangGraph StateGraph
+  const finalState = await graph.invoke({ context });
 
   yield { type: "agent_completed", role: "all", message: "All specialized agents have finished their analysis." };
 
-  const bull = bullRes.status === "fulfilled" ? bullRes.value : (null as any);
-  const bear = bearRes.status === "fulfilled" ? bearRes.value : (null as any);
-  const risk = riskRes.status === "fulfilled" ? riskRes.value : (null as any);
-  const valuationAgentOutput = valRes.status === "fulfilled" ? valRes.value : (null as any);
-  const newsAgentOutput = newsRes.status === "fulfilled" ? newsRes.value : (null as any);
+  const bull = finalState.bull;
+  const bear = finalState.bear;
+  const risk = finalState.risk;
+  const valuationAgentOutput = finalState.valuation;
+  const newsAgentOutput = finalState.news;
+  const judge = finalState.judge;
 
   const agentOutputs = { bull, bear, risk, valuation: valuationAgentOutput, news: newsAgentOutput };
 
@@ -130,9 +129,8 @@ export async function* runResearchAgent(query: string, riskProfile: RiskProfile 
   const scenarios = await generateScenarios(ticker, financials, financials.company);
   yield { type: "scenarios_completed", message: "Bull, Base, Bear scenarios ready." };
 
-  // Step 11: Judge Agent
+  // Step 11: Judge Agent (already run in graph)
   yield { type: "progress", step: "Final Judge synthesis", total: 14, current: 11 };
-  const judge = await runJudgeAgent(context, agentOutputs);
   yield { type: "judge_completed", verdict: judge.finalVerdict, message: `Judge ruled: ${judge.finalVerdict}` };
 
   // Step 12: Confidence Score
@@ -158,6 +156,7 @@ export async function* runResearchAgent(query: string, riskProfile: RiskProfile 
     verdict: finalVerdict,
     finalScore: scoreBreakdown.finalScore,
     confidence,
+    snapshot: financials,
     scoreBreakdown,
     agentDebate: { bull, bear, risk, valuation: valuationAgentOutput, news: newsAgentOutput, judge },
     valuation,

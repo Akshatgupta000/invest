@@ -219,6 +219,7 @@ export interface ResearchReport {
   verdict: Verdict;
   finalScore: number;
   confidence: ConfidenceScore;
+  snapshot: FinancialSnapshot;
   whatChanged?: WhatChanged;
   scoreBreakdown: ScoreBreakdown;
   agentDebate: {

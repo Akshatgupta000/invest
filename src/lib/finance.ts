@@ -119,8 +119,8 @@ export function normalizeYahooFinancialData(raw: any): FinancialSnapshot {
     currentRatio: financials?.currentRatio ?? null,
     beta: (keyStats?.beta as any) ?? null,
     dividendYield: (keyStats?.dividendYield as any) ?? null,
-    fiftyTwoWeekHigh: keyStats?.["52WeekChange"] ?? null, // Yahoo returns 52W change here often, need precise field but keeping close
-    fiftyTwoWeekLow: null,
+    fiftyTwoWeekHigh: (price as any)?.fiftyTwoWeekHigh ?? null,
+    fiftyTwoWeekLow: (price as any)?.fiftyTwoWeekLow ?? null,
     analystTargetPrice: financials?.targetMeanPrice ?? null,
     recommendationKey: financials?.recommendationKey ?? null,
   };

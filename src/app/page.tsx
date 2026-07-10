@@ -169,13 +169,12 @@ export default function HomePage() {
           </div>
         ) : showEmpty ? (
           <div className="lix-center-container animate-fade-in">
-            <div className="lix-orb"></div>
-            <h1 className="lix-greeting">Hi, Investor</h1>
-            <h2 className="lix-question">How can I help today?</h2>
+            <h1 className="lix-greeting" style={{ color: "var(--accent-purple)", fontWeight: 700 }}>Hi, Investor</h1>
+            <h2 className="lix-question" style={{ fontSize: "52px" }}>How can I help today?</h2>
             <p className="lix-subtitle">I'm here to help — from financial data to smart recommendations.</p>
             
             <div className="lix-search-container">
-              <div className="lix-pro-banner">
+              <div className="lix-pro-banner" style={{ background: "var(--accent-purple)", color: "white", border: "none", fontWeight: 600 }}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
                 Unlock deeper insights with InvestAI Pro
               </div>
@@ -189,21 +188,21 @@ export default function HomePage() {
                   disabled={isRunning}
                 />
                 <button className="lix-submit-btn" onClick={() => handleSearch()} disabled={isRunning || !query.trim()}>
-                  {isRunning ? <div className="spinner-small" /> : <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>}
+                  {isRunning ? <div className="spinner-small" /> : <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>}
                 </button>
               </div>
               
               <div className="flex items-center justify-center gap-4 mt-4 text-sm">
-                <span className="text-gray-400">Risk Profile:</span>
-                <div className="flex bg-gray-800/80 p-1 rounded-full border border-gray-700/50">
+                <span className="text-gray-400 font-medium">Risk Profile:</span>
+                <div className="flex bg-[#232329] p-1 rounded-md border border-[#ffffff1a]">
                   {(["conservative", "balanced", "aggressive"] as const).map(profile => (
                     <button
                       key={profile}
                       onClick={() => setRiskProfile(profile)}
-                      className={`px-4 py-1.5 rounded-full capitalize transition-colors ${
+                      className={`px-4 py-1.5 rounded uppercase font-bold tracking-wide text-xs transition-colors ${
                         riskProfile === profile 
-                          ? "bg-cyan-500/20 text-cyan-400 font-medium" 
-                          : "text-gray-400 hover:text-gray-200"
+                          ? "bg-[#ccff00] text-black" 
+                          : "text-gray-400 hover:text-white"
                       }`}
                     >
                       {profile}
@@ -218,26 +217,35 @@ export default function HomePage() {
               </div>
             </div>
 
-            <div className="lix-action-cards">
-              <div className="lix-action-card" onClick={() => handleSearch("Apple")}>
-                <div className="lix-card-icon">🍎</div>
-                <div className="lix-card-text">
-                  <h4>Tech Giants</h4>
-                  <p>Analyze Apple's latest earnings</p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full max-w-[800px]">
+              <div 
+                className="relative overflow-hidden bg-[#7c5cfc] rounded-2xl p-6 cursor-pointer hover:-translate-y-1 transition-transform min-h-[140px] flex flex-col justify-end"
+                onClick={() => handleSearch("Apple")}
+              >
+                <div className="absolute -top-4 -left-2 text-[100px] font-black text-black/20 leading-none pointer-events-none">01</div>
+                <div className="relative z-10 text-white">
+                  <h4 className="font-bold text-lg mb-1">Tech Giants</h4>
+                  <p className="text-white/80 text-sm font-medium">Analyze Apple's latest earnings</p>
                 </div>
               </div>
-              <div className="lix-action-card" onClick={() => handleSearch("Tesla")}>
-                <div className="lix-card-icon">🚗</div>
-                <div className="lix-card-text">
-                  <h4>EV Market</h4>
-                  <p>Is Tesla a buy right now?</p>
+              <div 
+                className="relative overflow-hidden bg-[#232329] rounded-2xl p-6 cursor-pointer hover:-translate-y-1 transition-transform min-h-[140px] flex flex-col justify-end border border-white/10"
+                onClick={() => handleSearch("Tesla")}
+              >
+                <div className="absolute -top-4 -left-2 text-[100px] font-black text-white/5 leading-none pointer-events-none">02</div>
+                <div className="relative z-10 text-white">
+                  <h4 className="font-bold text-lg mb-1">EV Market</h4>
+                  <p className="text-gray-400 text-sm font-medium">Is Tesla a buy right now?</p>
                 </div>
               </div>
-              <div className="lix-action-card" onClick={() => handleSearch("NVIDIA")}>
-                <div className="lix-card-icon">💻</div>
-                <div className="lix-card-text">
-                  <h4>AI Boom</h4>
-                  <p>Check NVIDIA's financials</p>
+              <div 
+                className="relative overflow-hidden bg-[#ccff00] rounded-2xl p-6 cursor-pointer hover:-translate-y-1 transition-transform min-h-[140px] flex flex-col justify-end"
+                onClick={() => handleSearch("NVIDIA")}
+              >
+                <div className="absolute -top-4 -left-2 text-[100px] font-black text-black/10 leading-none pointer-events-none">03</div>
+                <div className="relative z-10 text-black">
+                  <h4 className="font-bold text-lg mb-1">AI Boom</h4>
+                  <p className="text-black/70 text-sm font-medium">Check NVIDIA's financials</p>
                 </div>
               </div>
             </div>

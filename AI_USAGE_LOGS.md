@@ -23,6 +23,14 @@ The AI was heavily utilized as a coding, architecture, and documentation assista
 *Prompt Context:* "The project fails to build due to type errors from the `yahoo-finance2` package after upgrading to v3."
 *Action:* The AI debugged the type-safety checks in `finance.ts`, resolving `searchQuote` mismatching and casting issues with `beta` and `dividendYield`.
 
-### 6. README Prompt
-*Prompt Context:* "Rewrite the `README.md` professionally, highlighting the new AI multi-agent architecture and the transparent scoring engine."
-*Action:* The AI produced the finalized markdown document outlining the system features, architecture flow, tech stack, and limitations.
+### 6. Take-Home Assignment Alignment (Refactoring & LangGraph Migration)
+*Prompt Context:* "in this project i have shown multiple set of data and could you please check what are useless and what else i should implement in place of that... this was the assignment given to me check according to this and then tell"
+*Action:* The AI evaluated the codebase against the prompt requirements and discovered that `LangChain.js / LangGraph.js` was missing despite being a mandatory tech stack requirement. The AI drafted an Implementation Plan to refactor the project.
+
+### 7. LangGraph Orchestration Migration
+*Prompt Context:* "yes continue"
+*Action:* The AI installed `@langchain/core`, `@langchain/langgraph`, and the relevant providers (`@langchain/groq`, `@langchain/google-genai`). It rewrote `llm.ts` to construct LangChain `BaseChatModel` instances based on `.env.local` keys. It then built a proper `StateGraph` in `graph.ts` for the parallel Agent Swarm (Bull, Bear, Risk, Valuation, News) fanning into a `Judge` node, and integrated it cleanly into `agent.ts`.
+
+### 8. UI Data Integrity Refactoring
+*Prompt Context:* System instruction executing the agreed-upon Implementation Plan.
+*Action:* The AI removed the "fake" SVG charts from `ScoreBreakdown.tsx` and created a `KeyFinancials.tsx` component to surface the real fundamental numbers (P/E ratio, Market Cap, Free Cash flow) fetched during the data gathering step, thereby significantly boosting the app's professional credibility. It then rewrote this `README.md` to precisely match the assignment grading rubric.
