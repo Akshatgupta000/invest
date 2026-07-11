@@ -5,37 +5,37 @@
    DESIGN TOKENS
    ============================================================ */
 :root {
-  --bg-primary: #16161a;
-  --bg-secondary: #1e1e24;
-  --bg-card: #232329;
-  --bg-glass: #232329;
-  --bg-glass-hover: #2a2a32;
+  --bg-primary: #000000;
+  --bg-secondary: #0a0a0a;
+  --bg-card: #0a0a0a;
+  --bg-glass: rgba(20, 20, 20, 0.9);
+  --bg-glass-hover: rgba(35, 35, 35, 0.9);
 
-  --border-subtle: rgba(255, 255, 255, 0.05);
-  --border-medium: rgba(255, 255, 255, 0.1);
-  --border-strong: #7c5cfc;
+  --border-subtle: #1a1a1a;
+  --border-medium: #2a2a2a;
+  --border-strong: #ff4f00;
 
   --text-primary: #ffffff;
-  --text-secondary: #a0a0b0;
-  --text-muted: #707080;
-  --text-accent: #ccff00;
+  --text-secondary: #a3a3a3;
+  --text-muted: #666666;
+  --text-accent: #ff4f00;
 
-  --accent-blue: #7c5cfc;
-  --accent-blue-glow: rgba(124, 92, 252, 0.25);
-  --accent-green: #ccff00;
-  --accent-green-glow: rgba(204, 255, 0, 0.25);
-  --accent-red: #ff3366;
-  --accent-red-glow: rgba(255, 51, 102, 0.25);
-  --accent-amber: #ff9900;
-  --accent-purple: #7c5cfc;
+  --accent-blue: #ff4f00; /* Mapped to primary orange action color */
+  --accent-blue-glow: rgba(255, 79, 0, 0.35);
+  --accent-green: #10b981;
+  --accent-green-glow: rgba(16, 185, 129, 0.25);
+  --accent-red: #ef4444;
+  --accent-red-glow: rgba(239, 68, 68, 0.25);
+  --accent-amber: #f59e0b;
+  --accent-purple: #ff4f00;
 
-  --gradient-primary: linear-gradient(135deg, #7c5cfc, #a855f7);
-  --gradient-green: linear-gradient(135deg, #ccff00, #a1cc00);
-  --gradient-red: linear-gradient(135deg, #ff3366, #ff6699);
+  --gradient-primary: linear-gradient(135deg, #ff4f00, #ff7b00);
+  --gradient-green: linear-gradient(135deg, #10b981, #34d399);
+  --gradient-red: linear-gradient(135deg, #ef4444, #f87171);
 
-  --shadow-card: 0 8px 30px rgba(0, 0, 0, 0.5);
-  --shadow-glow-blue: 0 0 40px rgba(124, 92, 252, 0.15);
-  --shadow-glow-green: 0 0 40px rgba(204, 255, 0, 0.15);
+  --shadow-card: 0 8px 30px rgba(0, 0, 0, 0.8);
+  --shadow-glow-blue: 0 0 40px rgba(255, 79, 0, 0.25);
+  --shadow-glow-green: 0 0 40px rgba(16, 185, 129, 0.15);
 
   --radius-sm: 8px;
   --radius-md: 12px;
@@ -144,9 +144,17 @@ html, body {
   position: relative;
 }
 
-/* Ambient background blobs - removed for flat design */
+/* Ambient background orange glow at the bottom */
 .app-layout::before {
-  display: none;
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 40vh;
+  background: linear-gradient(to top, rgba(255, 79, 0, 0.25) 0%, rgba(255, 79, 0, 0.05) 40%, transparent 100%);
+  pointer-events: none;
+  z-index: 0;
 }
 
 .app-layout::after {

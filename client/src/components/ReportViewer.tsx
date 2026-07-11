@@ -98,7 +98,7 @@ function NewsCard({ item, type }: { item: any; type: "bullish" | "bearish" | "ne
 export default function ReportViewer({ report }: ReportViewerProps) {
   const [activeTab, setActiveTab] = useState<TabId>("overview");
 
-  const snap = report.snapshot;
+  const snap = (report.snapshot || {}) as any;
   const isInvest = report.verdict === "INVEST";
   const isWatch = report.verdict === "WATCHLIST";
   const verdictColor = isInvest ? "#ccff00" : isWatch ? "#f59e0b" : "#ff3366";
