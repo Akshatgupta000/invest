@@ -8,7 +8,7 @@ It is intended for technical reviewers, engineering managers, and developers loo
 
 ## 1. System Architecture
 
-The application is built on a modern Next.js (App Router) stack, utilizing a server-side orchestrator to coordinate data ingestion, AI agent execution, and real-time streaming to the client.
+The application is built on a modern React (Vite) + Express stack, utilizing a server-side orchestrator to coordinate data ingestion, AI agent execution, and real-time streaming to the client.
 
 ### 1.1 High-Level Flow
 1. **User Request:** The client initiates a request with a company name/ticker and a desired risk profile (Conservative, Balanced, Aggressive).

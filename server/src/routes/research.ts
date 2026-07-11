@@ -1,0 +1,85 @@
+import express from 'express';
+import { runResearchAgent } from '../lib/agent';
+import dbConnect from '../lib/db';
+import Report from '../models/Report';
+import { checkRateLimit } from '../lib/rateLimit';
+import { ResearchRequestSchema, RiskProfile } from '../lib/validation';
+
+const router = express.Router();
+
+router.post('/', async (req, res) => {
+  // 1. Rate Limiting
+  const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
+  const rateLimit = checkRateLimit(ip as string);
+  if (!rateLimit.success) {
+    return res.status(429).json({ error: rateLimit.error });
+  }
+
+  // 2. Input Validation
+  const parsed = ResearchRequestSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ error: parsed.error.issues[0].message });
+  }
+
+  const { query, riskProfile } = parsed.data;
+
+  // 3. MongoDB Caching (Check for recent reports within 6 hours)
+  try {
+    await dbConnect();
+    const sixHoursAgo = new Date(Date.now() - 6 * 60 * 60 * 1000);
+    const cachedReport = await Report.findOne({
+      $or: [
+        { ticker: { $regex: new RegExp(`^${query}$`, 'i') } },
+        { company: { $regex: new RegExp(`^${query}$`, 'i') } }
+      ],
+      riskProfile: riskProfile,
+      createdAt: { $gte: sixHoursAgo }
+    }).sort({ createdAt: -1 });
+
+    if (cachedReport) {
+      // Send the cached report directly as an SSE stream
+      res.setHeader('Content-Type', 'text/event-stream');
+      res.setHeader('Cache-Control', 'no-cache');
+      res.setHeader('Connection', 'keep-alive');
+      
+      const send = (data: any) => res.write(`data: ${JSON.stringify(data)}\n\n`);
+      send({ type: "log", level: "info", message: "Found cached report. Loading..." });
+      send({ type: "progress", step: "Loading Cache", total: 1, current: 1 });
+      send({ type: "complete", report: { ...cachedReport.toObject(), cached: true }, message: "Loaded from cache" });
+      res.end();
+      return;
+    }
+  } catch (err) {
+    console.warn("MongoDB Cache check failed, proceeding with fresh fetch:", err);
+  }
+
+  // 4. Run Agent Stream
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+
+  const send = (data: object) => res.write(`data: ${JSON.stringify(data)}\n\n`);
+
+  try {
+    for await (const step of runResearchAgent(query, riskProfile as RiskProfile)) {
+      send(step);
+      if (step.type === "complete") {
+        try {
+          await dbConnect();
+          await Report.create(step.report);
+        } catch (dbErr) {
+          console.error("Failed to save report:", dbErr);
+        }
+      }
+    }
+  } catch (err) {
+    send({
+      type: "error",
+      message: err instanceof Error ? err.message : "Unknown error occurred",
+    });
+  } finally {
+    res.end();
+  }
+});
+
+export default router;

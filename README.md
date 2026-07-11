@@ -6,7 +6,9 @@ InvestAI is a full-stack investment research platform that turns a company name 
 
 Built for investors, students, and engineers who want balanced, transparent equity research — not a single chatbot opinion.
 
-[![Next.js](https://img.shields.io/badge/Next.js-16-black?style=flat-square&logo=next.js)](https://nextjs.org/)
+[![React](https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react)](https://react.dev/)
+[![Express](https://img.shields.io/badge/Express-4.x-black?style=flat-square&logo=express)](https://expressjs.com/)
+[![Vite](https://img.shields.io/badge/Vite-6-646CFF?style=flat-square&logo=vite)](https://vitejs.dev/)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
 [![Node.js](https://img.shields.io/badge/Node.js-18+-339933?style=flat-square&logo=node.js)](https://nodejs.org/)
@@ -228,10 +230,10 @@ flowchart TD
 ```mermaid
 flowchart LR
     subgraph Client
-        UI[Next.js Frontend<br/>page.tsx + Components]
+        UI[React Frontend<br/>App.tsx + Components]
     end
 
-    subgraph API["Next.js API Routes"]
+    subgraph API["Express API Server"]
         Research["POST /api/research<br/>SSE Stream"]
         Reports["GET/DELETE /api/reports"]
     end
@@ -312,16 +314,16 @@ flowchart LR
 
 | Category | Technologies |
 | -------- | ------------ |
-| Frontend | Next.js 16 (App Router), React 19, TypeScript |
+| Frontend | React 19, Vite, TypeScript |
 | Styling | Tailwind CSS 4, custom CSS design tokens, glassmorphism utilities |
 | Icons | Lucide React |
-| Backend | Next.js API Routes (Node.js runtime) |
+| Backend | Node.js + Express |
 | AI Orchestration | LangGraph, LangChain.js |
 | AI Providers | Groq, Google Gemini, Mistral, Cohere (multi-provider fallback chain) |
 | Structured Output | Zod schemas with LangChain `.withStructuredOutput()` |
 | Financial Data | `yahoo-finance2` (Yahoo Finance) |
 | Database | MongoDB with Mongoose |
-| Streaming | Server-Sent Events via `ReadableStream` |
+| Streaming | Server-Sent Events via Express `res.write()` |
 | Validation | Zod request schemas |
 | Authentication | None (open research endpoint with IP rate limiting) |
 | Deployment | Compatible with Vercel or any Node.js host (no deployment config in repo) |
