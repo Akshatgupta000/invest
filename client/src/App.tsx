@@ -31,8 +31,8 @@ export default function HomePage() {
         const data = await res.json();
         setHistory(data.reports ?? []);
       }
-    } catch {
-      // Ignore
+    } catch (err) {
+      console.warn("[App] Failed to fetch historical reports. The backend might be unreachable.", err);
     }
   }, []);
 
@@ -94,8 +94,10 @@ export default function HomePage() {
             if (event.type === "error") {
               setError(event.message);
             }
-          } catch {
-            // Skip
+          } catch (e) {
+            // It's normal to occasionally receive fragmented JSON chunks over SSE due to network buffering.
+            // We safely drop the malformed chunk and wait for the next complete frame.
+            console.debug("[SSE] Dropped fragmented stream chunk:", dataPart);
           }
         }
       }
@@ -121,7 +123,8 @@ export default function HomePage() {
       setQuery(data.report.company);
       setRiskProfile(data.report.riskProfile || "balanced");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error loading report");
+      console.error("[History] Failed to load report details:", err);
+      setError(err instanceof Error ? err.message : "An unexpected error occurred while loading the report.");
     } finally {
       setIsRunning(false);
     }
@@ -131,8 +134,8 @@ export default function HomePage() {
     try {
       await fetch(`/api/reports?id=${id}`, { method: "DELETE" });
       setHistory((prev) => prev.filter((h) => h._id !== id));
-    } catch {
-      // Ignore
+    } catch (err) {
+      console.error(`[History] Failed to delete report ${id}:`, err);
     }
   };
 

@@ -1,33 +1,33 @@
-"use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const express_1 = __importDefault(require("express"));
-const agent_1 = require("../lib/agent");
-const db_1 = __importDefault(require("../lib/db"));
-const Report_1 = __importDefault(require("../models/Report"));
-const rateLimit_1 = require("../lib/rateLimit");
-const validation_1 = require("../lib/validation");
-const router = express_1.default.Router();
+import express from 'express';
+import { runResearchAgent } from '../services/ai/agent';
+import dbConnect from '../config/db';
+import Report from '../models/Report';
+import { checkRateLimit } from '../middleware/rateLimit';
+import { ResearchRequestSchema } from '../utils/validation';
+const router = express.Router();
 router.post('/', async (req, res) => {
-    // 1. Rate Limiting
+    // Enforce IP-based rate limiting to prevent abuse of the expensive LLM endpoints.
+    // In a production environment with heavy load, this should be migrated to Redis.
     const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
-    const rateLimit = (0, rateLimit_1.checkRateLimit)(ip);
+    const rateLimit = checkRateLimit(ip);
     if (!rateLimit.success) {
+        console.warn(`[RateLimit] Request rejected for IP: ${ip}`);
         return res.status(429).json({ error: rateLimit.error });
     }
-    // 2. Input Validation
-    const parsed = validation_1.ResearchRequestSchema.safeParse(req.body);
+    // Ensure payload conforms to the expected ResearchRequest format.
+    // Zod provides robust type safety before we pass data into the async orchestration pipeline.
+    const parsed = ResearchRequestSchema.safeParse(req.body);
     if (!parsed.success) {
+        console.warn(`[Validation] Invalid request body: ${parsed.error.message}`);
         return res.status(400).json({ error: parsed.error.issues[0].message });
     }
     const { query, riskProfile } = parsed.data;
-    // 3. MongoDB Caching (Check for recent reports within 6 hours)
+    // Aggressive caching layer: Query MongoDB for an identical report generated within the last 6 hours.
+    // This drastically reduces LLM API costs and drops latency from ~20s to <1s for hot tickers.
     try {
-        await (0, db_1.default)();
+        await dbConnect();
         const sixHoursAgo = new Date(Date.now() - 6 * 60 * 60 * 1000);
-        const cachedReport = await Report_1.default.findOne({
+        const cachedReport = await Report.findOne({
             $or: [
                 { ticker: { $regex: new RegExp(`^${query}$`, 'i') } },
                 { company: { $regex: new RegExp(`^${query}$`, 'i') } }
@@ -36,12 +36,13 @@ router.post('/', async (req, res) => {
             createdAt: { $gte: sixHoursAgo }
         }).sort({ createdAt: -1 });
         if (cachedReport) {
-            // Send the cached report directly as an SSE stream
+            // Re-hydrate the cached document and stream it immediately to the client
+            // using the exact same SSE format to maintain UI consistency.
             res.setHeader('Content-Type', 'text/event-stream');
             res.setHeader('Cache-Control', 'no-cache');
             res.setHeader('Connection', 'keep-alive');
             const send = (data) => res.write(`data: ${JSON.stringify(data)}\n\n`);
-            send({ type: "log", level: "info", message: "Found cached report. Loading..." });
+            send({ type: "log", level: "info", message: "Cache hit: Loading recent analysis..." });
             send({ type: "progress", step: "Loading Cache", total: 1, current: 1 });
             send({ type: "complete", report: { ...cachedReport.toObject(), cached: true }, message: "Loaded from cache" });
             res.end();
@@ -49,35 +50,39 @@ router.post('/', async (req, res) => {
         }
     }
     catch (err) {
-        console.warn("MongoDB Cache check failed, proceeding with fresh fetch:", err);
+        console.warn("[Cache] MongoDB check failed, falling back to fresh LLM fetch. Error:", err);
     }
-    // 4. Run Agent Stream
+    // Initialize the Server-Sent Events (SSE) stream.
+    // This allows us to pipe intermediate steps from the LangGraph agents directly to the UI,
+    // masking the 15-20s execution latency of the swarm.
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Connection', 'keep-alive');
     const send = (data) => res.write(`data: ${JSON.stringify(data)}\n\n`);
     try {
-        for await (const step of (0, agent_1.runResearchAgent)(query, riskProfile)) {
+        for await (const step of runResearchAgent(query, riskProfile)) {
             send(step);
             if (step.type === "complete") {
                 try {
-                    await (0, db_1.default)();
-                    await Report_1.default.create(step.report);
+                    await dbConnect();
+                    await Report.create(step.report);
                 }
                 catch (dbErr) {
-                    console.error("Failed to save report:", dbErr);
+                    console.error("[Database] Critical failure saving report to MongoDB:", dbErr);
+                    // Note: We don't fail the request here since the client already received the completed report stream.
                 }
             }
         }
     }
     catch (err) {
+        console.error("[AgentStream] Unhandled exception during agent execution:", err);
         send({
             type: "error",
-            message: err instanceof Error ? err.message : "Unknown error occurred",
+            message: err instanceof Error ? err.message : "A critical orchestration error occurred. Please try again.",
         });
     }
     finally {
         res.end();
     }
 });
-exports.default = router;
+export default router;

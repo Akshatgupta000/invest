@@ -1,10 +1,11 @@
 import express from 'express';
-import dbConnect from '../lib/db';
+import dbConnect from '../config/db';
 import Report from '../models/Report';
 
 const router = express.Router();
 
-// GET /api/reports — list all saved reports (most recent first)
+// Retrieves a paginated list of historical reports.
+// Sorted descending to ensure the latest insights are surfaced first in the UI history panel.
 router.get('/', async (req, res) => {
   try {
     await dbConnect();
@@ -15,11 +16,12 @@ router.get('/', async (req, res) => {
       .lean();
     res.json({ reports });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to fetch reports" });
+    console.error("[Reports API] Failed to fetch historical reports:", err);
+    res.status(500).json({ error: "Failed to fetch reports. Please check database connectivity." });
   }
 });
-// GET /api/reports/:id — fetch a single report by ID
+// Fetches the fully populated report document by its Mongo ID.
+// This is used to re-hydrate the ReportViewer when a user clicks a history card.
 router.get('/:id', async (req, res) => {
   try {
     await dbConnect();
@@ -29,12 +31,13 @@ router.get('/:id', async (req, res) => {
     }
     res.json({ report });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to fetch report" });
+    console.error(`[Reports API] Failed to fetch report ${req.params.id}:`, err);
+    res.status(500).json({ error: "Failed to fetch the specific report." });
   }
 });
 
-// DELETE /api/reports?id=xxx — delete a single report
+// Hard-delete a report from the database.
+// Typically invoked when a user wants to clear inaccurate or outdated runs from their local history.
 router.delete('/', async (req, res) => {
   const id = req.query.id;
   if (!id) {
@@ -45,8 +48,8 @@ router.delete('/', async (req, res) => {
     await Report.findByIdAndDelete(id);
     res.json({ success: true });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to delete report" });
+    console.error(`[Reports API] Failed to delete report ${id}:`, err);
+    res.status(500).json({ error: "Failed to delete the requested report." });
   }
 });
 

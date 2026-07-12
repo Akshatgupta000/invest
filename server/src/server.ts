@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
-import dbConnect from './lib/db';
+import dbConnect from './config/db';
 import reportsRouter from './routes/reports';
 import researchRouter from './routes/research';
 const app = express();

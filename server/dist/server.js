@@ -1,23 +1,17 @@
-"use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const express_1 = __importDefault(require("express"));
-const cors_1 = __importDefault(require("cors"));
-const dotenv_1 = __importDefault(require("dotenv"));
-const db_1 = __importDefault(require("./lib/db"));
-const reports_1 = __importDefault(require("./routes/reports"));
-const research_1 = __importDefault(require("./routes/research"));
-dotenv_1.default.config();
-const app = (0, express_1.default)();
+import 'dotenv/config';
+import express from 'express';
+import cors from 'cors';
+import dbConnect from './config/db';
+import reportsRouter from './routes/reports';
+import researchRouter from './routes/research';
+const app = express();
 const port = process.env.PORT || 5000;
-app.use((0, cors_1.default)());
-app.use(express_1.default.json());
+app.use(cors());
+app.use(express.json());
 // Connect to DB
-(0, db_1.default)().catch(err => console.error("Database connection failed:", err));
-app.use('/api/reports', reports_1.default);
-app.use('/api/research', research_1.default);
+dbConnect().catch(err => console.error("Database connection failed:", err));
+app.use('/api/reports', reportsRouter);
+app.use('/api/research', researchRouter);
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
 });
