@@ -143,7 +143,7 @@ invest/
 graph TD
     Client[React Frontend] -->|POST /api/research| Server[Express Server]
     
-    subgraph Data Aggregation Engine
+    subgraph DataAggregation [Data Aggregation Engine]
         Server --> YF[Yahoo Finance API]
         YF --> F[Financials]
         YF --> H[Historical Data]
@@ -151,11 +151,11 @@ graph TD
         YF --> C[Competitor Data]
     end
     
-    subgraph Evidence Layer
+    subgraph Evidence [Evidence Layer]
         F & H & N & C --> EV[EvidenceStore Normalization]
     end
 
-    subgraph Agent Swarm (LangGraph)
+    subgraph AgentSwarm [Agent Swarm - LangGraph]
         EV --> BA[Bull Agent]
         EV --> BR[Bear Agent]
         EV --> RA[Risk Agent]
@@ -164,7 +164,7 @@ graph TD
         BA & BR & RA & VA & NA --> JA[Judge Agent]
     end
 
-    subgraph Deterministic Engines
+    subgraph Deterministic [Deterministic Engines]
         EV --> QE[Quant Scoring Engine]
         EV --> SE[Scenario Engine]
         JA & QE --> CV[Claim Verifier & Audit]
