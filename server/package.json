@@ -5,8 +5,8 @@
   "main": "src/server.ts",
   "scripts": {
     "dev": "tsx watch src/server.ts",
-    "start": "tsx src/server.ts",
-    "build": "echo \"Server build skipped\""
+    "start": "node dist/server.js",
+    "build": "tsc"
   },
   "dependencies": {
     "@langchain/cohere": "^1.1.0",

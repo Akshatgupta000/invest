@@ -13,7 +13,6 @@
     "jsx": "react-jsx",
     "strict": false,
     "noFallthroughCasesInSwitch": true,
-    "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
     }
